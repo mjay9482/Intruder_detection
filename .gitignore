@@ -1,4 +1,75 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-intruder_env
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+intruder_env/
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Model files and weights
+*.pt
+*.pth
+*.onnx
+*.weights
+*.h5
+*.hdf5
+*.pb
+*.tflite
+*.mlmodel
+models/
+weights/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Media files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mkv
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# System files
+.DS_Store
+Thumbs.db

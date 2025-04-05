@@ -85,6 +85,32 @@
             background-color: #ff6600;
         }
 
+        /* Detection Info */
+        .detection-info {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .detection-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .detection-item {
+            background-color: #2d2d2d;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
         /* Footer */
         .footer {
             margin-top: 30px;
@@ -115,10 +141,22 @@
             <h2>Image Differencing</h2>
             <img id="diff-feed" src="{{ url_for('video.diff_feed') }}">
         </div>
+
+        <div class="video-box">
+            <h2>Object Detection</h2>
+            <img id="object-feed" src="{{ url_for('video.object_feed') }}">
+        </div>
+    </div>
+
+    <div class="detection-info">
+        <h2>Detected Objects</h2>
+        <ul id="detection-list" class="detection-list">
+            <!-- Detections will be populated here -->
+        </ul>
     </div>
 
     <div class="footer">
-        <p>© 2025 Mjay's Intruder Detection System | Built with Flask & OpenCV</p>
+        <p>© 2025 Intruder Detection System | Built with Flask & OpenCV</p>
     </div>
 
     <script>
@@ -137,8 +175,28 @@
                 alert("Camera switched to: " + selectedCamera);
                 document.getElementById("motion-feed").src = "{{ url_for('video.video_feed') }}?" + new Date().getTime();
                 document.getElementById("diff-feed").src = "{{ url_for('video.diff_feed') }}?" + new Date().getTime();
+                document.getElementById("object-feed").src = "{{ url_for('video.object_feed') }}?" + new Date().getTime();
             });
         }
+
+        function updateDetections() {
+            fetch("/get_detections")
+                .then(response => response.json())
+                .then(data => {
+                    const detectionList = document.getElementById("detection-list");
+                    detectionList.innerHTML = "";
+                    
+                    data.detections.forEach(detection => {
+                        const li = document.createElement("li");
+                        li.className = "detection-item";
+                        li.textContent = `${detection.class} (${(detection.confidence * 100).toFixed(1)}%)`;
+                        detectionList.appendChild(li);
+                    });
+                });
+        }
+
+        // Update detections every second
+        setInterval(updateDetections, 1000);
     </script>
 </body>
 </html>

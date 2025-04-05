@@ -3,6 +3,7 @@ from app.camera.webcam import Webcam
 from app.camera.phonecam import Phonecam
 from app.config import Config
 from app.detection.motion import MotionDetector
+from app.detection.object_detection import ObjectDetector
 import cv2
 import threading
 import time
@@ -12,15 +13,18 @@ video_bp = Blueprint("video", __name__)
 config = Config()
 camera = Webcam() if config.CAMERA_SOURCE == "webcam" else Phonecam(config.CAMERA_SOURCE)
 motion_detector = MotionDetector()
+object_detector = ObjectDetector()
 
 latest_frame = None
 latest_motion_frame = None
 latest_diff_frame = None
+latest_object_frame = None
+latest_detections = []
 lock = threading.Lock()
 
 def capture_frames():
     """Continuously capture frames from the camera and process them."""
-    global latest_frame, latest_motion_frame, latest_diff_frame
+    global latest_frame, latest_motion_frame, latest_diff_frame, latest_object_frame, latest_detections
 
     while True:
         success, frame = camera.get_frame()
@@ -31,7 +35,10 @@ def capture_frames():
 
         with lock:
             latest_frame = frame.copy()
+            # Motion detection
             _, latest_diff_frame, latest_motion_frame = motion_detector.detect_motion(frame)
+            # Object detection
+            latest_object_frame, latest_detections = object_detector.detect(frame)
 
 def auto_switch_camera():
     """Automatically switch camera if availability changes"""
@@ -45,15 +52,23 @@ def auto_switch_camera():
         elif isinstance(camera, Webcam) and new_source.startswith("http"):
             camera = Phonecam(new_source)
             print(f"Switched to phone camera dynamically: {new_source}")
-        time.sleep(10) 
+        time.sleep(10)
 
 threading.Thread(target=auto_switch_camera, daemon=True).start()
 
 def generate_stream(frame_type="motion"):
-    """Yield frames for streaming based on type: 'motion' or 'diff'."""
+    """Yield frames for streaming based on type: 'motion', 'diff', or 'object'."""
     while True:
         with lock:
-            frame = latest_motion_frame if frame_type == "motion" else latest_diff_frame
+            if frame_type == "motion":
+                frame = latest_motion_frame
+            elif frame_type == "diff":
+                frame = latest_diff_frame
+            elif frame_type == "object":
+                frame = latest_object_frame
+            else:
+                frame = latest_frame
+
             if frame is None:
                 continue
 
@@ -95,5 +110,16 @@ def video_feed():
 def diff_feed():
     """Stream the difference mask video."""
     return Response(generate_stream(frame_type="diff"), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@video_bp.route('/object_feed')
+def object_feed():
+    """Stream the video with object detection overlay."""
+    return Response(generate_stream(frame_type="object"), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@video_bp.route('/get_detections')
+def get_detections():
+    """Return the latest object detections as JSON."""
+    with lock:
+        return {'detections': latest_detections}
 
 threading.Thread(target=capture_frames, daemon=True).start()
