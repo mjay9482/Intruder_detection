@@ -80,7 +80,7 @@ def set_camera():
         camera = Webcam(0)
         print("Switched to webcam")
     elif source == "phonecam":
-        phone_url = Config.CAMERA_SOURCE
+        phone_url = config.phonecam_url
         camera = Phonecam(phone_url)
         print(f"Switched to phone camera: {phone_url}")
 

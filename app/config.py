@@ -1,25 +1,33 @@
 import cv2
+import os
 
 class Config:
     def __init__(self):
-        self.phonecam_url = "http://10.45.4.132:4747/video"
+        # Get phone camera URL from environment variable or use default
+        self.phonecam_url = os.getenv('PHONE_CAMERA_URL', 'http://10.45.7.149:4747/video')
         self.CAMERA_SOURCE = self.select_camera()
 
     def is_phonecam_available(self):
         """Check if the phone camera stream is accessible"""
-        cap = cv2.VideoCapture(self.phonecam_url)
-        if cap.isOpened():
-            cap.release()
-            return True
-        return False
+        try:
+            cap = cv2.VideoCapture(self.phonecam_url)
+            if cap.isOpened():
+                ret, frame = cap.read()
+                cap.release()
+                if ret and frame is not None:
+                    return True
+            return False
+        except Exception as e:
+            print(f"Error checking phone camera availability: {str(e)}")
+            return False
 
     def select_camera(self):
         """Automatically select the best available camera"""
         if self.is_phonecam_available():
-            print("Phone camera detected! Using phone camera.")
+            print(f"Phone camera detected at {self.phonecam_url}! Using phone camera.")
             return self.phonecam_url
         else:
-            print("Phone camera unavailable. Falling back to webcam.")
+            print(f"Phone camera unavailable at {self.phonecam_url}. Falling back to webcam.")
             return "webcam"
 
     def update_camera_source(self):
