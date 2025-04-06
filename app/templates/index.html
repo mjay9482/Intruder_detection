@@ -117,6 +117,41 @@
             font-size: 0.9rem;
             opacity: 0.8;
         }
+
+        /* Add these styles to your existing CSS */
+        .performance-metrics {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .metric-box {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-box h3 {
+            color: #ff9800;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .metric-box p {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +188,48 @@
         <ul id="detection-list" class="detection-list">
             <!-- Detections will be populated here -->
         </ul>
+    </div>
+
+    <div class="performance-metrics">
+        <h2>Performance Metrics</h2>
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <h3>FPS</h3>
+                <p id="fps">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Motion Latency</h3>
+                <p id="motion-latency">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Object Latency</h3>
+                <p id="object-latency">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Switch Time</h3>
+                <p id="switch-time">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Motion Accuracy</h3>
+                <p id="motion-accuracy">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Object mAP</h3>
+                <p id="object-map">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>False Positive Reduction</h3>
+                <p id="false-positive-reduction">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>System Uptime</h3>
+                <p id="uptime">-</p>
+            </div>
+            <div class="metric-box">
+                <h3>Recovery Rate</h3>
+                <p id="recovery-rate">-</p>
+            </div>
+        </div>
     </div>
 
     <div class="footer">
@@ -197,6 +274,25 @@
 
         // Update detections every second
         setInterval(updateDetections, 1000);
+
+        function updateMetrics() {
+            fetch("/get_metrics")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("fps").textContent = `${data.fps.toFixed(1)} FPS`;
+                    document.getElementById("motion-latency").textContent = `${data.motion_latency.toFixed(1)} ms`;
+                    document.getElementById("object-latency").textContent = `${data.object_latency.toFixed(1)} ms`;
+                    document.getElementById("switch-time").textContent = `${data.switch_time.toFixed(1)} ms`;
+                    document.getElementById("motion-accuracy").textContent = `${data.motion_accuracy.toFixed(1)}%`;
+                    document.getElementById("object-map").textContent = `${data.object_map.toFixed(1)}%`;
+                    document.getElementById("false-positive-reduction").textContent = `${data.false_positive_reduction.toFixed(1)}%`;
+                    document.getElementById("uptime").textContent = `${data.uptime.toFixed(1)}%`;
+                    document.getElementById("recovery-rate").textContent = `${data.recovery_rate.toFixed(1)}%`;
+                });
+        }
+
+        // Update metrics every second
+        setInterval(updateMetrics, 1000);
     </script>
 </body>
 </html>
